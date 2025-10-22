@@ -52,6 +52,13 @@ export function removeFromCart(productId) {
   saveToStorage();
 }
 
+export function updateQuantity(productId, newQuantity) {
+  const item = cart.find((ci) => ci.productId === productId);
+  if (!item) return;
+  item.quantity = newQuantity;
+  saveToStorage();
+}
+
 export function updateDeliveryOption(productId, deliveryOptionId) {
   let matchingItem;
 

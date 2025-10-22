@@ -1,4 +1,9 @@
-import { cart, removeFromCart, updateDeliveryOption } from "../../data/cart.js";
+import {
+  cart,
+  removeFromCart,
+  updateDeliveryOption,
+  updateQuantity,
+} from "../../data/cart.js";
 import { products, getProduct } from "../../data/products.js";
 import { formatCurrency } from "../utils/money.js";
 import { hello } from "https://unpkg.com/supersimpledev@1.0.1/hello.esm.js";
@@ -8,6 +13,18 @@ import {
   getDeliveryOption,
 } from "../../data/deliveryOptions.js";
 import { renderPaymentSummary } from "./paymentSummary.js";
+
+function updateCheckoutItemCount() {
+  const cartQuantity = cart.reduce((total, item) => total + item.quantity, 0);
+  const titleElement = document.querySelector(
+    ".checkout-header-middle-section a"
+  );
+  if (titleElement) {
+    titleElement.textContent = `${cartQuantity} item${
+      cartQuantity !== 1 ? "s" : ""
+    }`;
+  }
+}
 
 export function renderOrderSummary() {
   let cartSummaryHTML = "";
@@ -44,12 +61,12 @@ js-cart-item-container-${matchingProduct.id}">
                 <div class="product-price">${matchingProduct.getPrice()}</div>
                 <div class="product-quantity
                  js-product-quantity-${matchingProduct.id}">
-                  <span> Quantity: <span class="quantity-label">${
-                    cartItem.quantity
-                  }</span> </span>
-                  <span class="update-quantity-link link-primary">
-                    Update
-                  </span>
+                  <span> Quantity:</span> <input
+                  type="number"
+                  class="js-quantity-input"
+                  min="1"
+                  max="99"
+                  value="${cartItem.quantity}">
                   <span class="delete-quantity-link link-primary js-delete-link js-delete-link-${
                     matchingProduct.id
                   }" data-product-id="${matchingProduct.id}">
@@ -121,6 +138,7 @@ js-cart-item-container-${matchingProduct.id}">
       container.remove();
 
       renderPaymentSummary();
+      updateCheckoutItemCount();
     });
   });
 
@@ -130,6 +148,28 @@ js-cart-item-container-${matchingProduct.id}">
       updateDeliveryOption(productId, deliveryOptionId);
       renderOrderSummary();
       renderPaymentSummary();
+    });
+  });
+  document.querySelectorAll(".js-quantity-input").forEach((input) => {
+    input.addEventListener("change", () => {
+      const container = input.closest('[class*="js-cart-item-container-"]');
+      const match = container.className.match(
+        /js-cart-item-container-([a-z0-9-]+)/i
+      );
+      if (!match) return;
+
+      const productId = match[1];
+      const newQty = parseInt(input.value, 10);
+
+      if (!Number.isInteger(newQty) || newQty < 1 || newQty > 99) {
+        input.value = 1;
+        return;
+      }
+
+      updateQuantity(productId, newQty);
+      renderOrderSummary();
+      renderPaymentSummary();
+      updateCheckoutItemCount();
     });
   });
 }

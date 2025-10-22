@@ -52,15 +52,16 @@ class Cart {
   }
 
   removeFromCart(productId) {
-    const newCart = [];
-
-    this.cartItems.forEach((cartItem) => {
-      if (cartItem.productId !== productId) {
-        newCart.push(cartItem);
-      }
-    });
-
-    this.cartItems = newCart;
+    const item = this.cartItems.find(
+      (cartItem) => cartItem.productId === productId
+    );
+    if (!item) return;
+    item.quantity -= 1;
+    if (item.quantity <= 0) {
+      this.cartItems = this.cartItems.filter(
+        (cartItem) => cartItem.productId !== productId
+      );
+    }
     this.saveToStorage();
   }
 
