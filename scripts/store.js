@@ -2,6 +2,15 @@ import { cart, addToCart } from "../data/cart.js";
 import { products } from "../data/products.js";
 import { formatCurrency } from "./utils/money.js";
 
+{
+  const cartQuantity = cart.reduce((total, item) => total + item.quantity, 0);
+  const cartQuantityElement = document.querySelector(".js-cart-quantity");
+  if (cartQuantityElement) {
+    cartQuantityElement.innerText = cartQuantity;
+  }
+}
+updateCartQuantity();
+
 let productsHTML = "";
 
 products.forEach((product) => {
